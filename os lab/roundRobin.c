@@ -1,53 +1,85 @@
-#include<stdio.h>
-//#include<conio.h>
-void main() 
+#include <stdio.h>
+
+int main()
 {
-int i, NOP, sum=0, count=0, y, quant, wt=0, tat=0,bt[10], temp[10];
-float avg_wt, avg_tat;
-printf("Total number of process in system: ");
-scanf("%d", &NOP);
-y=NOP;
-for(i=0; i<NOP; i++)
+    int n, i, time = 0, tq;
+    int bt[20], rt[20], wt[20], tat[20];
+    float avgwt = 0, avgtat = 0;
+
+    printf("Enter number of processes: ");
+    scanf("%d", &n);
+
+    printf("Enter time quantum: ");
+    scanf("%d", &tq);
+
+    // Input burst time
+    for (i = 0; i < n; i++)
+    {
+        printf("Enter burst time for P%d: ", i + 1);
+        scanf("%d", &bt[i]);
+        rt[i] = bt[i];   // remaining time
+        wt[i] = 0;
+    }
+
+    // Round Robin logic
+    while (1)
+    {
+        int done = 1;
+
+        for (i = 0; i < n; i++)
+        {
+            if (rt[i] > 0)
+            {
+                done = 0;
+
+                if (rt[i] > tq)
+                {
+                    time += tq;
+                    rt[i] -= tq;
+                }
+                else
+                {
+                    time += rt[i];
+                    wt[i] = time - bt[i];
+                    rt[i] = 0;
+                }
+            }
+        }
+
+        if (done == 1)
+            break;
+    }
+
+    // Turnaround time calculation
+    for (i = 0; i < n; i++)
+    {
+        tat[i] = wt[i] + bt[i];
+    }
+
+    
+
+// Calculate total waiting time and turnaround time
+for (i = 0; i < n; i++)
 {
-printf("\nEnter the brust time of the process[%d]\n", i+1);
-scanf("%d", &bt[i]);
-temp[i] = bt[i]; 
+    avgwt = avgwt + wt[i];
+    avgtat = avgtat + tat[i];
 }
-printf("Enetr the time quantum for the process: \t");
-scanf("%d", &quant);
-printf("\n process NO \t\t burst time \t\t TAT \t\t Waiting time");
-for(sum=0; i=0; y!=0)
+
+// Calculate averages
+avgwt = avgwt / n;
+avgtat = avgtat / n;
+
+// Print averages
+printf("\nAverage Waiting Time = %.2f", avgwt);
+printf("\nAverage Turnaround Time = %.2f\n", avgtat);
+
+// Output
+printf("\nProcess\tBurst Time\tWaiting Time\tTurnaround Time\n");
+for (i = 0; i < n; i++)
 {
-if(temp[i] <= quant && temp[i]>0)
-{
-sum=sum+temp[i];
-temp[i]=0;
-count=1;
+    printf("P%d\t\t%d\t\t%d\t\t%d\n",
+           i + 1, bt[i], wt[i], tat[i]);
 }
-else if(temp[i] > 0)
-{
-temp[i] = temp[i] - quant;
-sum = sum + quant;
-}
-if(temp[i] ==0 && count==1)
-{
-y--;
-printf("\n process NO[%d]\t\t %d \t\t\t\t %d \t\t\t %d", i+1, bt[i], sum,bt[i]);
-wt=wt+sum-bt[i];
-tat=tat+sum;
-count=0;
-}
-if(i==NOP-1)
-{
-i=0;
-}
-else{
-i++;
-}
-}
-avg_wt = wt*1.0/NOP;
-avg_tat = tat*1.0/NOP;
-printf("\n Average waiting time : \t %f", avg_wt);
-printf("\n Average turn around time : \t %f", avg_tat);
-//getch();  
-}
+
+return 0;
+} 
