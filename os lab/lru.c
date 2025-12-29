@@ -1,191 +1,90 @@
-/*#include<stdio.h>
-void print_mem(int mem[], int m)
-{
-int i;
-for(i=0; i,m; i++)
-printf("\t %d", mem[i]);
-printf("\n");
-}
-int optimal1(int p, int ref[], int c)
-{
-int i;
-for(i=c-1; i>0; i--)
-{
-if(ref[i] == p)
-return i;
-}
-return -99;
-}
-int optimal2(int index[], int m)
-{
-int i, min=20;
-for(i=0; i<m; i++)
-if(min > index[i])
-min = index[i];
-return min;
-}
-void main()
-{
-int ref[25], mem[10], index[10], i, j, k, flag;
-int m, n, p, pf=0;
-printf("Enter the number of pages in the references string \n");
-scanf("%d", &n);
-printf("Enter the frame size: \n");
-scanf("%d", &m);
-printf("Entern the references string; \n");
-for(i=0; i<n; i++)
-scanf("%d", &ref[i]);
-j=0;
-for(i=0; i<m; i++)
-mem[i]=-1;
-for(i=0; i<n; i++)
-{
-p = ref[i];
-flag = 0;
-for(k=0; k<m; k++)
-if(mem[k] == p)
-{
-flag = 1;
-break;
-}
-else
-if(mem[k] == -1)
-{
-mem[k] = p;
-pf++;
-flag = 1;
-break;
-}
-if(flag ==0 )
-{
-pf++;
-for(k=0; k<m; k++)
-index[k] = optimal1(mem[k], ref, i);
-for(k=0; k<m; k++)
-if(index[k] == -99)
-{
-mem[k] = n;
-flag=1;
-break;
-}
-if(flag==0)
-{
-j=optimal2(index, m);
-for(k=0; k<m; k++)
-if(mem[k] == ref[j])
-mem[k] = p;
-}
-}
-printf("%d", p);
-print_mem(mem, m);
-}
-printf("Number of page fault= %d", pf);
-}
-
-*/
-
-
-#include<stdio.h>
-
-void print_mem(int mem[], int m)
-{
-    int i;
-    for(i=0; i<m; i++)
-        printf("\t %d", mem[i]);
-    printf("\n");
-}
-
-// Returns the last-used time of page p
-int lru_index(int p, int ref[], int current)
-{
-    int i;
-    for(i = current - 1; i >= 0; i--)
-        if(ref[i] == p)
-            return i;   // last used position
-    return -1;          // page never used before
-}
-
-// Find the page with the smallest last-used index
-int find_lru(int index[], int m)
-{
-    int i, min = 999, pos = 0;
-    for(i = 0; i < m; i++)
-    {
-        if(index[i] < min)
-        {
-            min = index[i];
-            pos = i;
-        }
-    }
-    return pos;
-}
+#include <stdio.h>
 
 int main()
 {
-    int ref[25], mem[10], index[10];
-    int i, j, k, flag;
-    int m, n, p, pf=0;
+    int pages[50], frame[10], time[10];
+    int n, f, i, j, k;
+    int pageFaults = 0, found, least;
 
-    printf("Enter the number of pages in the reference string:\n");
+    printf("Enter number of pages: ");
     scanf("%d", &n);
 
-    printf("Enter the frame size:\n");
-    scanf("%d", &m);
+    printf("Enter page reference string: ");
+    for (i = 0; i < n; i++)
+        scanf("%d", &pages[i]);
 
-    printf("Enter the reference string:\n");
-    for(i=0; i<n; i++)
-        scanf("%d", &ref[i]);
+    printf("Enter number of frames: ");
+    scanf("%d", &f);
 
-    for(i=0; i<m; i++)
-        mem[i] = -1;
-
-    for(i=0; i<n; i++)
+    // Initialize frames and time
+    for (i = 0; i < f; i++)
     {
-        p = ref[i];
-        flag = 0;
+        frame[i] = -1;
+        time[i] = 0;
+    }
 
-        // Check if page is already present
-        for(k=0; k<m; k++)
+    printf("\nPage\tFrames\n");
+
+    for (i = 0; i < n; i++)
+    {
+        found = 0;
+
+        // Check if page is in frame
+        for (j = 0; j < f; j++)
         {
-            if(mem[k] == p)
+            if (frame[j] == pages[i])
             {
-                flag = 1;  // HIT
+                found = 1;
+                time[j] = i + 1;   // update recent use
                 break;
             }
         }
 
-        // MISS
-        if(flag == 0)
+        // Page fault
+        if (found == 0)
         {
-            pf++;
+            pageFaults++;
 
-            // If empty frame exists
-            for(k=0; k<m; k++)
+            // Check for empty frame
+            for (j = 0; j < f; j++)
             {
-                if(mem[k] == -1)
+                if (frame[j] == -1)
                 {
-                    mem[k] = p;
-                    flag = 1;
+                    frame[j] = pages[i];
+                    time[j] = i + 1;
+                    found = 1;
                     break;
                 }
             }
-
-            // No empty frame → LRU replacement
-            if(flag == 0)
-            {
-                for(k=0; k<m; k++)
-                    index[k] = lru_index(mem[k], ref, i);
-
-                j = find_lru(index, m);
-                mem[j] = p;
-            }
         }
 
-        printf("%d", p);
-        print_mem(mem, m);
+        // Replace least recently used page
+        if (found == 0)
+        {
+            least = 0;
+            for (j = 1; j < f; j++)
+            {
+                if (time[j] < time[least])
+                    least = j;
+            }
+
+            frame[least] = pages[i];
+            time[least] = i + 1;
+        }
+
+        // Display frames
+        printf("%d\t", pages[i]);
+        for (j = 0; j < f; j++)
+        {
+            if (frame[j] != -1)
+                printf("%d ", frame[j]);
+            else
+                printf("- ");
+        }
+        printf("\n");
     }
 
-    printf("Number of page faults = %d\n", pf);
+    printf("\nTotal Page Faults = %d\n", pageFaults);
+
     return 0;
 }
-
