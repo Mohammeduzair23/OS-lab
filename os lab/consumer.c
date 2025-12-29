@@ -1,73 +1,93 @@
 #include <stdio.h>
 
-#define max_size 3
-int item[max_size];
-int front, rear, size;
+#define SIZE 5
 
-//void display();
-//void prod();
-//void consu();
+int buffer[SIZE];
+int in = 0, out = 0;
+int count = 0;
 
-void display() {
-    int k, temp;
-    if (size > 0) {
-        k = size;
-        temp = front;
-        printf("Items in buffer are:\n");
-        while (k > 0) {
-            printf("%d\n", item[temp]);
-            temp = (temp + 1) % max_size;
-            k--;
-        }
-    } else {
-        printf("Buffer is empty\n");
+void produce()
+{
+    int item;
+    if (count == SIZE)
+    {
+        printf("Buffer is FULL. Cannot produce.\n");
+        return;
     }
+
+    printf("Enter item to produce: ");
+    scanf("%d", &item);
+
+    buffer[in] = item;
+    in = (in + 1) % SIZE;
+    count++;
+
+    printf("Produced item: %d\n", item);
 }
 
-void prod() {
-    if (size < max_size) {
-        rear = (rear + 1) % max_size;
-        printf("Enter the item: ");
-        scanf("%d", &item[rear]);
-        size++;
-    } else {
-        printf("Buffer is full\n");
+void consume()
+{
+    int item;
+    if (count == 0)
+    {
+        printf("Buffer is EMPTY. Cannot consume.\n");
+        return;
     }
-    display();
+
+    item = buffer[out];
+    out = (out + 1) % SIZE;
+    count--;
+
+    printf("Consumed item: %d\n", item);
 }
 
-void consu() {
-    if (size > 0) {
-        printf("Consumed item is: %d\n", item[front]);
-        front = (front + 1) % max_size;
-        size--;
-        display();
-    } else {
-        printf("Buffer is empty\n");
+void display()
+{
+    int i;
+    if (count == 0)
+    {
+        printf("Buffer is EMPTY.\n");
+        return;
     }
+
+    printf("Buffer contents: ");
+    for (i = 0; i < count; i++)
+    {
+        printf("%d ", buffer[(out + i) % SIZE]);
+    }
+    printf("\n");
 }
 
-int main() {
-    int ch;
-    size = 0;
-    front = 0;
-    rear = -1;
+int main()
+{
+    int choice;
 
-    do {
-        printf("\n______PRODUCER CONSUMER PROBLEM_____\n");
-        printf("1. Produce item\n2. Consume item\n3. Display buffer\n4. Exit\n");
+    while (1)
+    { // This printf statement can be written in single to 
+        printf("\n--- Producer Consumer Menu ---\n");
+        printf("1. Produce\n");
+        printf("2. Consume\n");
+        printf("3. Display Buffer\n");
+        printf("4. Exit\n");
         printf("Enter your choice: ");
-        scanf("%d", &ch);
-        
-        switch (ch) {
-            case 1: prod(); break;
-            case 2: consu(); break;
-            case 3: display(); break;
-            case 4: break;
-            default: printf("Invalid choice\n");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            produce();
+            break;
+        case 2:
+            consume();
+            break;
+        case 3:
+            display();
+            break;
+        case 4:
+            printf("Exiting program.\n");
+            return 0;
+        default:
+            printf("Invalid choice!\n");
         }
-    } while (ch != 4);
-
-    return 0;
+    }
 }
-
